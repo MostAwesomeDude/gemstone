@@ -10,10 +10,10 @@ Name:                gemstone
 Version:             0.1
 
 -- A short (one-line) description of the package.
--- Synopsis:            
+Synopsis:            A simple library for SDL+GL games.
 
 -- A longer description of the package.
--- Description:         
+Description:         Gemstone helps you build games.
 
 -- URL for the project homepage or repository.
 Homepage:            http://corbinsimpson.com/
@@ -43,7 +43,13 @@ Build-type:          Simple
 -- Extra-source-files:  
 
 -- Constraint on the version of Cabal needed to build this package.
-Cabal-version:       >=1.2
+Cabal-version:       >=1.6
+
+
+source-repository head
+  type:              git
+  location:          git://github.com/MostAwesomeDude/gemstone.git
+
 
 
 Library
@@ -71,5 +77,5 @@ Library
                    , stb-image
                    , transformers
 
-  -- GHC compiler flags.
-  ghc-options:       -Wall -rtsopts -O2
+  -- GHC compiler flags. -O2 is not in here at the moment...
+  ghc-options:       -Wall -rtsopts
