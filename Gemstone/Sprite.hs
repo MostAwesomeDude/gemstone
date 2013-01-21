@@ -22,14 +22,20 @@ addAlpha a (Color3 r g b) = Color4 r g b a
 
 drawSprite :: (Ord c, VertexComponent c) => Sprite c -> IO ()
 drawSprite (Sprite material b) = case material of
-    Colored c malpha -> renderPrimitive Quads $ do
+    Colored c malpha -> do
         case malpha of
-            Just alpha -> color $ addAlpha alpha c
-            Nothing -> color c
-        vertex (Vertex2 x y)
-        vertex (Vertex2 x' y)
-        vertex (Vertex2 x' y')
-        vertex (Vertex2 x y')
+            Just alpha -> do
+                blend $= Enabled
+                blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
+                color $ addAlpha alpha c
+            Nothing -> do
+                blend $= Disabled
+                color c
+        renderPrimitive Quads $ do
+            vertex (Vertex2 x y)
+            vertex (Vertex2 x' y)
+            vertex (Vertex2 x' y')
+            vertex (Vertex2 x y')
     Textured texobj -> do
         texture Texture2D $= Enabled
         activeTexture $= TextureUnit 0
