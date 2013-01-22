@@ -5,7 +5,7 @@ module Gemstone.Box (
     makeXYWH, makeXYWHValid, makeXYXYValid,
     bLeft, bBot, bRight, bTop,
     bW, bH, bW', bH',
-    bX, bY, bXY,
+    bX, bY, bX', bY', bXY, bXY',
     center,
     scaleBox,
 ) where
@@ -89,17 +89,24 @@ bH' f (BoxLike x1 y1 x2 y2) =
     fmap (\h -> BoxLike x1 (y1 - h) x2 y2) (f (y2 - y1))
 
 -- | Move a box.
-bX, bY :: Num a => Simple Lens (Box a) a
+bX, bY, bX', bY' :: Num a => Simple Lens (Box a) a
 bX f (Box (BoxLike x1 y1 x2 y2)) =
     fmap (\x' -> Box (BoxLike x' y1 (x' + x2 - x1) y2)) (f x1)
 bY f (Box (BoxLike x1 y1 x2 y2)) =
     fmap (\y' -> Box (BoxLike x1 y' x2 (y' + y2 - y1))) (f y1)
+bX' f (Box (BoxLike x1 y1 x2 y2)) =
+    fmap (\x' -> Box (BoxLike (x' + x1 - x2) y1 x' y2)) (f x2)
+bY' f (Box (BoxLike x1 y1 x2 y2)) =
+    fmap (\y' -> Box (BoxLike x1 (y' + y1 - y2) x2 y')) (f y2)
 
 -- Move a box more efficiently.
-bXY :: Num a => Simple Lens (Box a) (a, a)
+bXY, bXY' :: Num a => Simple Lens (Box a) (a, a)
 bXY f (Box (BoxLike x1 y1 x2 y2)) = let
     f' (w, h) = Box $ BoxLike w h (w + x2 - x1) (h + y2 - y1)
     in fmap f' $ f (x1, y1)
+bXY' f (Box (BoxLike x1 y1 x2 y2)) = let
+    f' (w, h) = Box $ BoxLike (w + x1 - x2) (h + y1 - y2) w h
+    in fmap f' $ f (x2, y2)
 
 -- The center of a box. Read-only.
 center :: Fractional a => Box a -> (a, a)
