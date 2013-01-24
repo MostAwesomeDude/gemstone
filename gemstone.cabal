@@ -79,7 +79,7 @@ Library
                    , bitmap-opengl
                    , containers
                    , lens
-                   , linear
+                   , linear == 0.9.*
                    , stb-image
                    , transformers
 
