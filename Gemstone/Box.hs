@@ -34,9 +34,9 @@ pInter x1 y1 x2 y2 = x1 < x2 && y1 < y2
 box :: Ord v => Simple Prism (BoxLike v) (Box v)
 box = prism unBox f
     where
-    f b | pred b = Right $ Box b
+    f b | predicate b = Right $ Box b
         | otherwise = Left b
-    pred (BoxLike x1 y1 x2 y2) = pInter x1 y1 x2 y2
+    predicate (BoxLike x1 y1 x2 y2) = pInter x1 y1 x2 y2
 
 -- | Whether two boxes intersect.
 --
