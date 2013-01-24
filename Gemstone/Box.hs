@@ -2,7 +2,7 @@
 module Gemstone.Box (
     Box(), BoxLike(..), unBox, box,
     pInter, bInter,
-    makeXYWH, makeXYWHValid, makeXYXYValid,
+    makeXYWH, makeXYWHValid, makeXYXYValid, squareAt,
     bLeft, bBot, bRight, bTop,
     bW, bH, bW', bH',
     bX, bY, bX', bY', bXY, bXY',
@@ -65,6 +65,16 @@ makeXYXYValid :: (Ord v, Num v) => v -> v -> v -> v -> Box v
 makeXYXYValid x1 y1 x2 y2 = case BoxLike x1 y1 x2 y2 ^? box of
     Just b -> b
     Nothing -> error "makeXYXYValid: Zero width or height"
+
+-- | Put a square around a point.
+-- 
+--   The square is described by the 'x' and 'y' coordinates of the center, and
+--   the radius 'r'.
+--
+--   >>> squareAt 1 1 1
+--   Box {unBox = BoxLike {_bx1 = 0, _by1 = 0, _bx2 = 2, _by2 = 2}}
+squareAt :: (Num a, Ord a) => a -> a -> a -> Box a
+squareAt x y r = makeXYXYValid (x - r) (y - r) (x + r) (y + r)
 
 -- | Resize a box by moving an edge.
 --

@@ -64,3 +64,7 @@ drawSprite (Sprite material b) = case material of
 
 drawSprites :: [Sprite GLfloat] -> IO ()
 drawSprites = mapM_ drawSprite
+
+-- | Small helper for putting together colored sprites.
+colored :: RGB -> Box v -> Sprite v
+colored c b = Sprite (Colored c Nothing) b
