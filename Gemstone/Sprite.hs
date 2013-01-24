@@ -67,4 +67,4 @@ drawSprites = mapM_ drawSprite
 
 -- | Small helper for putting together colored sprites.
 colored :: RGB -> Box v -> Sprite v
-colored c b = Sprite (Colored c Nothing) b
+colored c = Sprite $ Colored c Nothing
