@@ -7,13 +7,18 @@ Name:                gemstone
 -- The package version. See the Haskell package versioning policy
 -- (http://www.haskell.org/haskellwiki/Package_versioning_policy) for
 -- standards guiding when and how versions should be incremented.
-Version:             0.1
+Version:             0.1.1
 
 -- A short (one-line) description of the package.
-Synopsis:            A simple library for SDL+GL games.
+Synopsis:            A simple library of helpers for SDL+GL games.
 
 -- A longer description of the package.
-Description:         Gemstone helps you build games.
+Description:
+  Gemstone helps you build games.
+  .
+  The main goal of Gemstone is to build a library of datatypes, combinators,
+  and utilities for building general games. Gemstone differentiates itself
+  from other game libraries by being lens-based.
 
 -- URL for the project homepage or repository.
 Homepage:            http://corbinsimpson.com/
@@ -53,7 +58,8 @@ source-repository head
 
 
 Library
-  exposed-modules:   Gemstone.Box
+  exposed-modules:   Gemstone.Animation
+                   , Gemstone.Box
                    , Gemstone.Color
                    , Gemstone.GL
                    , Gemstone.Loop
