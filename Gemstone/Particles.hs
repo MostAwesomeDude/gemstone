@@ -49,4 +49,7 @@ tickParticles ticks (Particles g coords@(cx, cy) c cvar ps) =
     (g', [x, y]) = mapAccumL jitter g [(cx, 0.01), (cy, 0.01)]
     (life, g'') = randomR (50, 1250) g'
     (g''', c') = varyColor cvar g'' c
-    newParticle = makeParticle (x, y) life c'
+    newParticle = makeParticle (x, y) life c' & _1 . aSprite . sMaterial %~ f
+    f material = case material of
+        Colored c'' _ -> Colored c'' . Just . fst $ random g
+        x -> x
