@@ -41,6 +41,7 @@ drawSprite (Sprite material b) = case material of
         activeTexture $= TextureUnit 0
         textureBinding Texture2D $= Just texobj
         textureFunction $= Replace
+        color hotPink
         renderPrimitive Quads $ do
             texCoord (TexCoord2 r s)
             vertex (Vertex2 x y)

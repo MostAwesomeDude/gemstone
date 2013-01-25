@@ -27,6 +27,9 @@ skyBlue = Color3 127 127 255
 grassGreen = Color3 0 255 63
 stoneGray = Color3 127 127 127
 
+hotPink :: RGB
+hotPink = Color3 255 105 180
+
 -- | Vary a color by a given amount, using the provide random number
 --   generator.
 varyColor :: GLubyte -> StdGen -> RGB -> (StdGen, RGB)
