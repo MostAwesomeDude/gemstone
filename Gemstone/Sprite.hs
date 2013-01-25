@@ -24,13 +24,8 @@ drawSprite :: (Ord c, VertexComponent c) => Sprite c -> IO ()
 drawSprite (Sprite material b) = case material of
     Colored c malpha -> do
         case malpha of
-            Just alpha -> do
-                blend $= Enabled
-                blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
-                color $ addAlpha alpha c
-            Nothing -> do
-                blend $= Disabled
-                color c
+            Just alpha -> color $ addAlpha alpha c
+            Nothing -> color c
         renderPrimitive Quads $ do
             vertex (Vertex2 x y)
             vertex (Vertex2 x' y)

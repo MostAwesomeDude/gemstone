@@ -11,4 +11,5 @@ gemstoneMain :: a -> Loop a -> IO ()
 gemstoneMain globals loop = withInit [InitEverything] $ do
     initial <- getInitialGems
     checkExtensions
+    prepareGLState
     void $ runStateT loop (initial, globals)

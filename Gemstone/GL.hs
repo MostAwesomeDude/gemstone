@@ -2,7 +2,7 @@ module Gemstone.GL where
 
 import Control.Monad
 import Graphics.Rendering.OpenGL
-import Graphics.UI.SDL
+import Graphics.UI.SDL (glSwapBuffers)
 
 checkErrors :: IO ()
 checkErrors = do
@@ -36,3 +36,20 @@ resizeViewport :: GLsizei -> GLsizei -> IO ()
 resizeViewport w h
     | w > h     = viewport $= (Position ((w-3*h) `div` 2) (-h), Size (2*h) (2*h))
     | otherwise = viewport $= (Position (-w) ((h-3*w) `div` 2), Size (2*w) (2*w))
+
+-- | Turn on alpha blending.
+enableBlending :: IO ()
+enableBlending = do
+    blend $= Enabled
+    blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
+
+-- | Set some initial GL state that should be set once and only once.
+--
+--   It doesn't hurt to call this action multiple times.
+prepareGLState :: IO ()
+prepareGLState = do
+    putStrLn "Preparing GL state..."
+    checkErrors
+    enableBlending
+    putStrLn "Finished preparing GL state!"
+    checkErrors
