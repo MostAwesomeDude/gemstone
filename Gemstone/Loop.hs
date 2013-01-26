@@ -67,3 +67,7 @@ gemstoneLoop pre draw post = do
     post
     q <- use $ gems . gQuitFlag
     unless q $ gemstoneLoop pre draw post
+
+simpleLoop :: Loop a -> Loop a
+simpleLoop draw = gemstoneLoop pre draw (return ())
+    where pre = handleEvents (\_ -> return ())
