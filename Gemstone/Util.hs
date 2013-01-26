@@ -21,7 +21,7 @@ word8ToTexture :: Int -> Int -> [Word8] -> IO TextureObject
 word8ToTexture width height bytes = do
     [texobj] <- genObjectNames 1
     textureBinding Texture2D $= Just texobj
-    textureFilter Texture2D $= ((Linear', Nothing), Linear')
+    textureFilter Texture2D $= ((Nearest, Nothing), Nearest)
     withWord8Ptr bytes $ \ptr -> let
         pd = PixelData Luminance UnsignedByte ptr
         size = TextureSize2D (fromIntegral width) (fromIntegral height)
