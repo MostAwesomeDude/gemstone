@@ -53,3 +53,17 @@ handleEvents handler = do
     zoom _2 $ handler event
     -- Continue until all events have been handled.
     when (event /= NoEvent) $ handleEvents handler
+
+updateTimers :: Loop a
+updateTimers = do
+    ticks <- lift getTicks
+    gems . gTimers %= updateTimestamp ticks
+
+gemstoneLoop :: Loop a -> Loop a -> Loop a -> Loop a
+gemstoneLoop pre draw post = do
+    updateTimers
+    pre
+    draw
+    post
+    q <- use $ gems . gQuitFlag
+    unless q $ gemstoneLoop pre draw post
