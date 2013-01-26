@@ -6,7 +6,7 @@ import Foreign
 import Graphics.Rendering.OpenGL
 
 checkerboard :: [Word8]
-checkerboard = take 64 $ concat $ repeat [0, 255]
+checkerboard = map (* 255) [ (x + y) `mod` 2 | x <- [0..7], y <- [0..7] ]
 
 withWord8Ptr :: [Word8] -> (Ptr Word8 -> IO b) -> IO b
 withWord8Ptr bytes action = let
