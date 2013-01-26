@@ -10,13 +10,18 @@ import Gemstone.Loop
 -- | Main entrypoint for Gemstone.
 --
 --   Note that SDL state (and, by extension, GL state) doesn't exist outside
---   of this function, so any one-time setup of state needs to be done inside
---   the loop.
+--   of this function. However, SDL will be started before the globals are
+--   populated, so it is possible to run SDL and/or GL actions in the setup.
 --
---   >>> main = gemstoneMain globals (setupState >> mainLoop)
-gemstoneMain :: a -> Loop a -> IO ()
-gemstoneMain globals loop = withInit [InitEverything] $ do
-    initial <- getInitialGems
+--   >>> main = gemstoneMain makeGlobals (setupState >> mainLoop)
+gemstoneMain :: IO a -> Loop a -> IO ()
+gemstoneMain setup loop = withInit [InitEverything] $ do
+    -- Order of operations matters, doesn't it...
+    -- First, grab the gem state. This gets us the surface and enables GL.
+    initialGems <- getInitialGems
+    -- Now we can check GL extensions and set up our GL state.
     checkExtensions
     prepareGLState
-    void $ runStateT loop (initial, globals)
+    -- And now the app-specific state can be created.
+    initialState <- setup
+    void $ runStateT loop (initialGems, initialState)

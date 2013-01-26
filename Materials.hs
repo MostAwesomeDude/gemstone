@@ -19,8 +19,14 @@ data Globals = Globals { _gBoard :: Sprite GLfloat }
 
 makeLenses ''Globals
 
+makeGlobals :: IO Globals
+makeGlobals = do
+    texobj <- checkerboardTexture
+    let s = Sprite (Textured texobj) $ makeXYWHValid 0.1 0.4 0.2 0.2
+    return $ Globals s
+
 mainLoop :: Loop Globals
-mainLoop = setup >> simpleLoop draw
+mainLoop = simpleLoop draw
     where
     bg :: Sprite GLfloat
     bg = colored white $ makeXYXYValid 0 0 1 1
@@ -29,11 +35,6 @@ mainLoop = setup >> simpleLoop draw
     transparent :: Sprite GLfloat
     transparent = Sprite (Colored green (Just 127)) $
         makeXYWHValid 0.7 0.4 0.2 0.2
-    setup :: Loop Globals
-    setup = do
-        texobj <- lift checkerboardTexture
-        let s = Sprite (Textured texobj) $ makeXYWHValid 0.1 0.4 0.2 0.2
-        _2 . gBoard .= s
     draw :: Loop Globals
     draw = do
         lift clearScreen
@@ -43,4 +44,4 @@ mainLoop = setup >> simpleLoop draw
 
 main :: IO ()
 main = do
-    gemstoneMain (Globals undefined) mainLoop
+    gemstoneMain makeGlobals mainLoop
