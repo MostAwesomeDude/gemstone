@@ -43,5 +43,4 @@ mainLoop = simpleLoop draw
         lift finishFrame
 
 main :: IO ()
-main = do
-    gemstoneMain makeGlobals mainLoop
+main = gemstoneMain makeGlobals mainLoop

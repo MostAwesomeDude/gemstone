@@ -13,7 +13,7 @@ withWord8Ptr bytes action = let
     len = length bytes
     indexed = zip [0..] bytes
     in allocaBytes len $ \ptr -> do
-        mapM_ (\(i, x) -> pokeElemOff ptr i x) indexed
+        mapM_ (uncurry $ pokeElemOff ptr) indexed
         action ptr
 
 -- | Pack a finite list of Word8s into a texture.
@@ -25,8 +25,7 @@ word8ToTexture width height bytes = do
     withWord8Ptr bytes $ \ptr -> let
         pd = PixelData Luminance UnsignedByte ptr
         size = TextureSize2D (fromIntegral width) (fromIntegral height)
-        in do
-        texImage2D Nothing NoProxy 0 Luminance' size 0 pd
+        in texImage2D Nothing NoProxy 0 Luminance' size 0 pd
     textureBinding Texture2D $= Nothing
     return texobj
 
