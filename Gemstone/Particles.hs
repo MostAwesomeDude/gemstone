@@ -52,4 +52,4 @@ tickParticles ticks (Particles g coords@(cx, cy) c cvar ps) =
     newParticle = makeParticle (x, y) life c' & _1 . aSprite . sMaterial %~ f
     f material = case material of
         Colored c'' _ -> Colored c'' . Just . fst $ random g
-        x -> x
+        mat -> mat
