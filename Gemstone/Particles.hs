@@ -22,6 +22,9 @@ data Particles a = Particles { _pGen :: StdGen
 
 makeLenses ''Particles
 
+particleSprites :: Simple Traversal (Particles a) (Sprite a)
+particleSprites = pParticles . traverse . _1 . aSprite
+
 makeParticles :: Num a => Particles a
 makeParticles = Particles (mkStdGen 0) (0, 0) black 0 []
 
