@@ -41,13 +41,16 @@ drawSprite (Sprite material b) = case material of
         textureFunction $= Replace
         color hotPink
         renderPrimitive Quads $ do
-            texCoord (TexCoord2 r s)
+            -- For some reason, these need to be wound in the opposite
+            -- direction in order to get the texture correctly oriented. Bug
+            -- in the image loader?
+            texCoord (TexCoord2 s t')
             vertex (Vertex2 x y)
-            texCoord (TexCoord2 r' s)
+            texCoord (TexCoord2 s' t')
             vertex (Vertex2 x' y)
-            texCoord (TexCoord2 r' s')
+            texCoord (TexCoord2 s' t)
             vertex (Vertex2 x' y')
-            texCoord (TexCoord2 r s')
+            texCoord (TexCoord2 s t)
             vertex (Vertex2 x y')
         texture Texture2D $= Disabled
     Text font string c -> do
@@ -63,10 +66,10 @@ drawSprite (Sprite material b) = case material of
     x' = b ^. rbox . bRight
     y' = b ^. rbox . bTop
     h = b ^. rbox . bH . to (/ 2)
-    r = 0 :: GLfloat
     s = 0 :: GLfloat
-    r' = 1
+    t = 0 :: GLfloat
     s' = 1
+    t' = 1
 
 drawSprites :: [Sprite GLfloat] -> IO ()
 drawSprites = mapM_ drawSprite
