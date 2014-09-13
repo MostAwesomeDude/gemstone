@@ -72,6 +72,9 @@ updateTimers = do
     ticks <- lift getTicks
     gems . gTimers %= updateTimestamp ticks
 
+elapsedTime :: StateT (Gems, a) IO Float
+elapsedTime = use $ gems . gTimers . tDelta . to fromIntegral . to (/ 1000)
+
 gemstoneLoop :: Loop a -> Loop a -> Loop a -> Loop a
 gemstoneLoop before draw after = do
     updateTimers

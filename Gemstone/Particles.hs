@@ -48,7 +48,7 @@ clearParticles :: Particles a -> Particles a
 clearParticles = pParticles .~ []
 
 makeParticle :: (Floating v, Ord v) => (v, v) -> Int -> RGB -> Particle v
-makeParticle (x, y) lifetime c = (animate s, lifetime)
+makeParticle (x, y) lifetime c = (animated s, lifetime)
     where s = colored c $ squareAt x y 0.005
 
 -- | Update the lifetimes of all of the particles, and cull the dead ones.
