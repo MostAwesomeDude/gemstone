@@ -73,14 +73,14 @@ updateTimers = do
     gems . gTimers %= updateTimestamp ticks
 
 gemstoneLoop :: Loop a -> Loop a -> Loop a -> Loop a
-gemstoneLoop pre draw post = do
+gemstoneLoop before draw after = do
     updateTimers
-    pre
+    before
     draw
-    post
+    after
     q <- use $ gems . gQuitFlag
-    unless q $ gemstoneLoop pre draw post
+    unless q $ gemstoneLoop before draw after
 
 simpleLoop :: Loop a -> Loop a
-simpleLoop draw = gemstoneLoop pre draw (return ())
-    where pre = handleEvents (\_ -> return ())
+simpleLoop draw = gemstoneLoop before draw (return ())
+    where before = handleEvents (\_ -> return ())

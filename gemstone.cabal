@@ -81,8 +81,8 @@ Library
                    , bitmap
                    , bitmap-opengl
                    , containers
-                   , lens == 3.7.*
-                   , linear == 0.9.*
+                   , lens == 4.4.*
+                   , linear == 1.10.*
                    , random
                    , stb-image
                    , transformers

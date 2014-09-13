@@ -20,9 +20,9 @@ import Graphics.UI.SDL (glSwapBuffers)
 checkErrors :: IO ()
 checkErrors = do
     es <- get errors
-    if null es
-        then putStrLn "All clear!"
-        else putStrLn ("Error: " ++ show es)
+    putStrLn $ if null es
+        then "All clear!"
+        else "Error: " ++ show es
 
 checkExtensions :: IO ()
 checkExtensions = let

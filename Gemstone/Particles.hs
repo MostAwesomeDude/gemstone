@@ -17,6 +17,7 @@ module Gemstone.Particles where
 import Control.Lens
 import Data.Traversable
 import Data.Word
+import Foreign.C.Types
 import System.Random
 
 import Gemstone.Animation
@@ -64,7 +65,7 @@ tickParticles ticks (Particles g coords@(cx, cy) c cvar ps) =
     ps'' = if length ps < 100 then newParticle : ps' else ps'
     (g', [x, y]) = mapAccumL jitter g [(cx, 0.01), (cy, 0.01)]
     (life, g'') = randomR (50, 1250) g'
-    (g''', c') = varyColor cvar g'' c
+    (g''', c') = varyColor (CUChar cvar) g'' c
     newParticle = makeParticle (x, y) life c' & _1 . aSprite . sMaterial %~ f
     f material = case material of
         Colored c'' _ -> Colored c'' . Just . fst $ random g

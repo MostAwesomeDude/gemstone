@@ -23,6 +23,7 @@ module Gemstone.Box (
     scaleBox,
 ) where
 
+import Control.Applicative
 import Control.Lens
 
 data BoxLike v = BoxLike { _bx1, _by1, _bx2, _by2 :: v }
@@ -67,17 +68,13 @@ makeXYWH x y w h = BoxLike x y (x + w) (y + h)
 --
 --   Includes a slap on the face if the box is not valid.
 makeXYWHValid :: (Ord v, Num v) => v -> v -> v -> v -> Box v
-makeXYWHValid x y w h = case makeXYWH x y w h ^? box of
-    Just b -> b
-    Nothing -> error "makeXYWHValid: Zero width or height"
+makeXYWHValid x y w h = makeXYWH x y w h ^?! box
 
 -- | Make a valid box.
 --
 --   Same signature as BoxLike, but making a Box.
 makeXYXYValid :: (Ord v, Num v) => v -> v -> v -> v -> Box v
-makeXYXYValid x1 y1 x2 y2 = case BoxLike x1 y1 x2 y2 ^? box of
-    Just b -> b
-    Nothing -> error "makeXYXYValid: Zero width or height"
+makeXYXYValid x1 y1 x2 y2 = BoxLike x1 y1 x2 y2 ^?! box
 
 -- | Put a square around a point.
 -- 
@@ -126,10 +123,10 @@ bY' f (Box (BoxLike x1 y1 x2 y2)) =
 bXY, bXY' :: Num a => Simple Lens (Box a) (a, a)
 bXY f (Box (BoxLike x1 y1 x2 y2)) = let
     f' (w, h) = Box $ BoxLike w h (w + x2 - x1) (h + y2 - y1)
-    in fmap f' $ f (x1, y1)
+    in f' <$> f (x1, y1)
 bXY' f (Box (BoxLike x1 y1 x2 y2)) = let
     f' (w, h) = Box $ BoxLike (w + x1 - x2) (h + y1 - y2) w h
-    in fmap f' $ f (x2, y2)
+    in f' <$> f (x2, y2)
 
 -- The center of a box. Read-only.
 center :: Fractional a => Box a -> (a, a)

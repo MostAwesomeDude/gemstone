@@ -73,7 +73,7 @@ drawSprite (Sprite material b) = case material of
             scale h h 1
             renderFont font string All
     where
-    rbox = remit box
+    rbox = re box
     x = b ^. rbox . bLeft
     y = b ^. rbox . bBot
     x' = b ^. rbox . bRight
