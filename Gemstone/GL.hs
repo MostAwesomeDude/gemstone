@@ -24,15 +24,16 @@ checkErrors = do
         then "All clear!"
         else "Error: " ++ show es
 
+checkExtensions' :: [String] -> IO ()
+checkExtensions' requiredExts = do
+    exts <- get glExtensions
+    forM_ requiredExts $ \x -> if "GL_" ++ x `elem` exts
+        then putStrLn $ "Found extension " ++ x
+        else error $ "Need extension " ++ x
+
 checkExtensions :: IO ()
-checkExtensions = let
-    required = ["ARB_texture_rectangle", "ARB_texture_non_power_of_two"]
-    f x = elem $ "GL_" ++ x
-    in do
-        exts <- get glExtensions
-        forM_ required $ \x -> if f x exts
-            then putStrLn $ "Found extension " ++ x
-            else error $ "Need extension " ++ x
+checkExtensions = checkExtensions' exts
+    where exts = ["ARB_texture_rectangle", "ARB_texture_non_power_of_two"]
 
 clearScreen :: IO ()
 clearScreen = do
