@@ -27,7 +27,7 @@ import Gemstone.Loop
 --   populated, so it is possible to run SDL and/or GL actions in the setup.
 --
 --   >>> main = gemstoneMain makeGlobals (setupState >> mainLoop)
-gemstoneMain :: IO a -> Loop a -> IO ()
+gemstoneMain :: IO g -> Loop g () -> IO ()
 gemstoneMain setup loop = withInit [InitEverything] $ do
     -- Order of operations matters, doesn't it...
     -- First, grab the gem state. This gets us the surface and enables GL.

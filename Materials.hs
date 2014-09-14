@@ -45,7 +45,7 @@ makeGlobals = do
         red = Animation (head reds) (reds ++ reverse reds) 0 0 0.01 0
     return $ Globals s red
 
-mainLoop :: Loop Globals
+mainLoop :: Loop Globals ()
 mainLoop = simpleLoop draw
     where
     bg :: Sprite GLfloat
@@ -55,7 +55,7 @@ mainLoop = simpleLoop draw
     transparent :: Sprite GLfloat
     transparent = Sprite (Colored green (Just 127)) $
         makeXYWHValid 0.7 0.7 0.2 0.2
-    draw :: Loop Globals
+    draw :: Loop Globals ()
     draw = do
         lift clearScreen
         board <- use $ _2 . gBoard

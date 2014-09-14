@@ -25,7 +25,10 @@ import Gemstone.GL
 import Gemstone.Timers
 
 -- | The type of loops.
-type Loop a = StateT (Gems, a) IO ()
+--
+--   The type 'g' is the game-specific global state, and 'a' is the parameter
+--   of the 'Monad'.
+type Loop g a = StateT (Gems, g) IO a
 
 data Gems = Gems { _gScreen    :: Surface
                  , _gQuitFlag  :: Bool
@@ -59,7 +62,7 @@ handleCoreEvent (VideoResize w h) =
     gScreen <~ lift (resizeScreen (fromIntegral w) (fromIntegral h))
 handleCoreEvent event = modify $ handlePureCoreEvent event
 
-handleEvents :: (Event -> StateT a IO ()) -> Loop a
+handleEvents :: (Event -> StateT g IO ()) -> Loop g ()
 handleEvents handler = do
     event <- lift pollEvent
     zoom _1 $ handleCoreEvent event
@@ -67,15 +70,19 @@ handleEvents handler = do
     -- Continue until all events have been handled.
     when (event /= NoEvent) $ handleEvents handler
 
-updateTimers :: Loop a
+updateTimers :: Loop g ()
 updateTimers = do
     ticks <- lift getTicks
     gems . gTimers %= updateTimestamp ticks
 
-elapsedTime :: StateT (Gems, a) IO Float
+elapsedTime :: Loop g Float
 elapsedTime = use $ gems . gTimers . tDelta . to fromIntegral . to (/ 1000)
 
-gemstoneLoop :: Loop a -> Loop a -> Loop a -> Loop a
+-- | Run a game in a loop indefinitely.
+gemstoneLoop :: Loop g () -- ^ The pre-drawing action
+             -> Loop g () -- ^ The drawing action
+             -> Loop g () -- ^ The post-drawing action
+             -> Loop g ()
 gemstoneLoop before draw after = do
     updateTimers
     before
@@ -84,6 +91,6 @@ gemstoneLoop before draw after = do
     q <- use $ gems . gQuitFlag
     unless q $ gemstoneLoop before draw after
 
-simpleLoop :: Loop a -> Loop a
+simpleLoop :: Loop g () -> Loop g ()
 simpleLoop draw = gemstoneLoop before draw (return ())
     where before = handleEvents (\_ -> return ())
