@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveFunctor, TemplateHaskell #-}
 -- Copyright (C) 2014 Google Inc. All rights reserved.
 --
 -- Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -32,7 +32,7 @@ data Animation a = Animation { _aSprite      :: Sprite a
                              , _aSpriteIndex :: Integer
                              , _aFrameElapsed, _aFrameLength :: a
                              , _aVelocity    :: V2 a }
-    deriving (Show)
+    deriving (Functor, Show)
 
 makeLenses ''Animation
 

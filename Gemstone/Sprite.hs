@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveFunctor, TemplateHaskell #-}
 -- Copyright (C) 2014 Google Inc. All rights reserved.
 --
 -- Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -28,7 +28,7 @@ data Material = Colored RGB (Maybe GLubyte)
 
 data Sprite a = Sprite { _sMaterial :: Material
                        , _sBox :: Box a }
-    deriving (Show)
+    deriving (Functor, Show)
 
 makeLenses ''Sprite
 

@@ -1,4 +1,4 @@
-{-# LANGUAGE EmptyDataDecls, TemplateHaskell #-}
+{-# LANGUAGE DeriveFunctor, EmptyDataDecls, TemplateHaskell #-}
 -- Copyright (C) 2014 Google Inc. All rights reserved.
 --
 -- Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -27,12 +27,12 @@ import Control.Applicative
 import Control.Lens
 
 data BoxLike v = BoxLike { _bx1, _by1, _bx2, _by2 :: v }
-    deriving (Show)
+    deriving (Functor, Show)
 
 makeLenses ''BoxLike
 
 newtype Box v = Box { unBox :: BoxLike v }
-    deriving (Show)
+    deriving (Functor, Show)
 
 -- | Whether two vertices would determine the lower-left and upper-right corners
 --   of a rectangle.

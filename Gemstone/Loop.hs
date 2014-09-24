@@ -18,6 +18,7 @@ import Control.Lens
 import Control.Monad
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.State
+import Data.Word
 import Graphics.Rendering.OpenGL
 import Graphics.UI.SDL
 
@@ -74,6 +75,9 @@ updateTimers :: Loop g ()
 updateTimers = do
     ticks <- lift getTicks
     gems . gTimers %= updateTimestamp ticks
+
+elapsedTicks :: Loop g Word32
+elapsedTicks = use $ gems . gTimers . tDelta
 
 elapsedTime :: Loop g Float
 elapsedTime = use $ gems . gTimers . tDelta . to fromIntegral . to (/ 1000)
