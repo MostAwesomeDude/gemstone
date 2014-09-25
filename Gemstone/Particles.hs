@@ -15,58 +15,68 @@
 module Gemstone.Particles where
 
 import Control.Lens
+import Control.Monad
 import Data.Traversable
 import Data.Word
 import Foreign.C.Types
+import Graphics.Rendering.OpenGL
+import Linear
 import System.Random
 
-import Gemstone.Animation
-import Gemstone.Box
 import Gemstone.Color
+import Gemstone.Drawable
 import Gemstone.Random
 import Gemstone.Sprite
 
-type Particle a = (Animation a, Int)
+data Particle a = Particle { _pMaterial :: Material
+                           , _pSize :: V2 a
+                           , _pLifetime :: Int }
+
+makeLenses ''Particle
 
 data Particles a = Particles { _pGen :: StdGen
-                             , _pCenter :: (a, a)
+                             , _pCenter :: V2 a
                              , _pColor :: RGB
                              , _pColorVariance :: Word8
-                             , _pParticles :: [Particle a] }
+                             , _pParticles :: [(Particle a, V2 a)] }
 
 makeLenses ''Particles
 
-particleSprites :: Simple Traversal (Particles a) (Sprite a)
-particleSprites = pParticles . traverse . _1 . aSprite
+instance Drawable Particle where
+    draw (Particle mat size _) = draw (Sprite mat size)
+
+drawParticles :: Particles GLfloat -> IO ()
+drawParticles ps = forM_ (ps ^. pParticles) $ uncurry draw
+
+particleSprite :: Lens (Particle a) (Particle b) (Sprite a) (Sprite b)
+particleSprite = lens (\(Particle m s _) -> Sprite m s)
+    (\(Particle _ _ l) (Sprite m s) -> Particle m s l)
+
+particleSprites :: Traversal' (Particles a) (Sprite a)
+particleSprites = pParticles . traverse . _1 . particleSprite
 
 makeParticles :: Num a => Particles a
-makeParticles = Particles (mkStdGen 0) (0, 0) black 0 []
+makeParticles = Particles (mkStdGen 0) 0 black 0 []
 
 -- | Clear out a list of particles without resetting any of the rest of the
 --   state.
 clearParticles :: Particles a -> Particles a
 clearParticles = pParticles .~ []
 
-makeParticle :: (Floating v, Ord v) => (v, v) -> Int -> RGB -> Particle v
-makeParticle (x, y) lifetime c = (animated s, lifetime)
-    where s = colored c $ squareAt x y 0.005
-
 -- | Update the lifetimes of all of the particles, and cull the dead ones.
-filterParticles :: (Ord v, Num v) => Int -> [Particle v] -> [Particle v]
-filterParticles ticks =
-    filter (^. _2 . to (> 0)) . over (traverse . _2) (\x -> x - ticks)
+filterParticles :: (Ord a, Num a)
+                => Int -> [(Particle a, b)] -> [(Particle a, b)]
+filterParticles ticks ps = filter (\p -> p ^. _1 . pLifetime > 0) ps'
+    where ps' = ps & traverse . _1 . pLifetime %~ subtract ticks
 
-tickParticles :: (Floating v, Ord v, Random v)
-               => Int -> Particles v -> Particles v
-tickParticles ticks (Particles g coords@(cx, cy) c cvar ps) =
+tickParticles :: (Floating a, Ord a, Random a)
+              => Int -> Particles a -> Particles a
+tickParticles ticks (Particles g coords@(V2 cx cy) c cvar ps) =
     Particles g''' coords c cvar ps''
     where
     ps' = filterParticles ticks ps
-    ps'' = if length ps < 100 then newParticle : ps' else ps'
+    ps'' = if length ps < 100 then (newParticle, V2 x y):ps' else ps'
     (g', [x, y]) = mapAccumL jitter g [(cx, 0.01), (cy, 0.01)]
     (life, g'') = randomR (50, 1250) g'
     (g''', c') = varyColor (CUChar cvar) g'' c
-    newParticle = makeParticle (x, y) life c' & _1 . aSprite . sMaterial %~ f
-    f material = case material of
-        Colored c'' _ -> Colored c'' . Just . fst $ random g
-        mat -> mat
+    newParticle = Particle (Colored c' (Just . fst $ random g)) 0.01 life

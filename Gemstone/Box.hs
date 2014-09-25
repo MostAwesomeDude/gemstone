@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveFunctor, EmptyDataDecls, TemplateHaskell #-}
+{-# LANGUAGE DeriveFunctor, TemplateHaskell #-}
+
 -- Copyright (C) 2014 Google Inc. All rights reserved.
 --
 -- Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -12,69 +13,71 @@
 -- WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 -- License for the specific language governing permissions and limitations
 -- under the License.
+
 module Gemstone.Box (
     Box(), BoxLike(..), unBox, box,
     pInter, bInter,
     makeXYWH, makeXYWHValid, makeXYXYValid, squareAt,
     bLeft, bBot, bRight, bTop,
-    bW, bH, bW', bH',
-    bX, bY, bX', bY', bXY, bXY',
+    bW, bH, -- bW', bH',
+    bX, bY, bX', bY',
+    bXY, bXY',
     center,
     scaleBox,
 ) where
 
 import Control.Applicative
 import Control.Lens
+import Linear
 
-data BoxLike v = BoxLike { _bx1, _by1, _bx2, _by2 :: v }
+data BoxLike a = BoxLike { _bl, _tr :: V2 a }
     deriving (Functor, Show)
 
 makeLenses ''BoxLike
 
-newtype Box v = Box { unBox :: BoxLike v }
+newtype Box a = Box { unBox :: BoxLike a }
     deriving (Functor, Show)
 
 -- | Whether two vertices would determine the lower-left and upper-right corners
 --   of a rectangle.
 --
 --   This is the predicate for determining whether a box is valid.
-pInter :: Ord v => v -> v -> v -> v -> Bool
-pInter x1 y1 x2 y2 = x1 < x2 && y1 < y2
+pInter :: Ord a => V2 a -> V2 a -> Bool
+pInter (V2 x1 y1) (V2 x2 y2) = x1 < x2 && y1 < y2
 
 -- | Prism for getting a Box from a BoxLike.
 --
 --   The Box constructor isn't exported, so this is the only way to obtain a
 --   valid Box.
-box :: Ord v => Simple Prism (BoxLike v) (Box v)
+box :: Ord a => Simple Prism (BoxLike a) (Box a)
 box = prism unBox f
     where
     f b | predicate b = Right $ Box b
         | otherwise = Left b
-    predicate (BoxLike x1 y1 x2 y2) = pInter x1 y1 x2 y2
+    predicate (BoxLike x y) = pInter x y
 
 -- | Whether two boxes intersect.
 --
 --   The boxes have to be good.
-bInter :: Ord v => Box v -> Box v -> Bool
+bInter :: Ord a => Box a -> Box a -> Bool
 bInter (Box b1) (Box b2) =
-    pInter (b1 ^. bx1) (b1 ^. by1) (b2 ^. bx2) (b2 ^. by2) &&
-    pInter (b2 ^. bx1) (b2 ^. by1) (b1 ^. bx2) (b1 ^. by2)
+    pInter (b1 ^. bl) (b2 ^. tr) && pInter (b2 ^. bl) (b1 ^. tr)
 
 -- | Make a box with width and height.
-makeXYWH :: (Ord v, Num v) => v -> v -> v -> v -> BoxLike v
-makeXYWH x y w h = BoxLike x y (x + w) (y + h)
+makeXYWH :: (Ord a, Num a) => a -> a -> a -> a -> BoxLike a
+makeXYWH x y w h = BoxLike (V2 x y) (V2 (x + w) (y + h))
 
 -- | Like makeXYWH, but valid.
 --
 --   Includes a slap on the face if the box is not valid.
-makeXYWHValid :: (Ord v, Num v) => v -> v -> v -> v -> Box v
+makeXYWHValid :: (Ord a, Num a) => a -> a -> a -> a -> Box a
 makeXYWHValid x y w h = makeXYWH x y w h ^?! box
 
 -- | Make a valid box.
 --
 --   Same signature as BoxLike, but making a Box.
-makeXYXYValid :: (Ord v, Num v) => v -> v -> v -> v -> Box v
-makeXYXYValid x1 y1 x2 y2 = BoxLike x1 y1 x2 y2 ^?! box
+makeXYXYValid :: (Ord a, Num a) => a -> a -> a -> a -> Box a
+makeXYXYValid x1 y1 x2 y2 = BoxLike (V2 x1 y1) (V2 x2 y2) ^?! box
 
 -- | Put a square around a point.
 -- 
@@ -89,52 +92,52 @@ squareAt x y r = makeXYXYValid (x - r) (y - r) (x + r) (y + r)
 -- | Resize a box by moving an edge.
 --
 --   Inherently unsafe.
-bLeft, bBot, bRight, bTop :: Simple Lens (BoxLike a) a
-bLeft   = bx1
-bBot    = by1
-bRight  = bx2
-bTop    = by2
+bLeft, bBot, bRight, bTop :: Lens' (BoxLike a) a
+bLeft   = bl . _x
+bBot    = bl . _y
+bRight  = tr . _x
+bTop    = tr . _y
 
 -- | Resize a box by changing its width or height.
 --
 --   Inherently unsafe.
-bW, bH, bW', bH' :: Num a => Simple Lens (BoxLike a) a
-bW  f (BoxLike x1 y1 x2 y2) =
-    fmap (\w -> BoxLike x1 y1 (x2 + w) y2) (f (x2 - x1))
-bH  f (BoxLike x1 y1 x2 y2) =
-    fmap (\h -> BoxLike x1 y1 x2 (y2 + h)) (f (y2 - y1))
-bW' f (BoxLike x1 y1 x2 y2) =
-    fmap (\w -> BoxLike (x1 - w) y1 x2 y2) (f (x2 - x1))
-bH' f (BoxLike x1 y1 x2 y2) =
-    fmap (\h -> BoxLike x1 (y1 - h) x2 y2) (f (y2 - y1))
+bW, bH :: Num a => Getter (BoxLike a) a
+bW = to $ \(BoxLike (V2 x _) (V2 x' _)) -> x' - x
+bH = to $ \(BoxLike (V2 _ y) (V2 _ y')) -> y' - y
+-- bW' f (BoxLike x1 y1 x2 y2) =
+--     fmap (\w -> BoxLike (x1 - w) y1 x2 y2) (f (x2 - x1))
+-- bH' f (BoxLike x1 y1 x2 y2) =
+--     fmap (\h -> BoxLike x1 (y1 - h) x2 y2) (f (y2 - y1))
 
 -- | Move a box.
-bX, bY, bX', bY' :: Num a => Simple Lens (Box a) a
-bX f (Box (BoxLike x1 y1 x2 y2)) =
-    fmap (\x' -> Box (BoxLike x' y1 (x' + x2 - x1) y2)) (f x1)
-bY f (Box (BoxLike x1 y1 x2 y2)) =
-    fmap (\y' -> Box (BoxLike x1 y' x2 (y' + y2 - y1))) (f y1)
-bX' f (Box (BoxLike x1 y1 x2 y2)) =
-    fmap (\x' -> Box (BoxLike (x' + x1 - x2) y1 x' y2)) (f x2)
-bY' f (Box (BoxLike x1 y1 x2 y2)) =
-    fmap (\y' -> Box (BoxLike x1 (y' + y1 - y2) x2 y')) (f y2)
+-- bX, bY, bX', bY' :: Num a => Lens' (Box a) a
+bX, bY, bX', bY' :: (Ord a, Num a) => Fold (Box a) a
+bX = re box . lens (\(BoxLike (V2 x _) _) -> x)
+    (\(BoxLike (V2 x y) (V2 x' y')) x'' -> BoxLike (V2 x'' y) (V2 (x' + x'' - x) y'))
+bY = re box . lens (\(BoxLike (V2 _ y) _) -> y)
+    (\(BoxLike (V2 x y) (V2 x' y')) y'' -> BoxLike (V2 x y'') (V2 x' (y' + y'' - y)))
+bX' = re box . lens (\(BoxLike _ (V2 x _)) -> x)
+    (\(BoxLike (V2 x y) (V2 x' y')) x'' -> BoxLike (V2 (x + x'' - x') y) (V2 x'' y'))
+bY' = re box . lens (\(BoxLike _ (V2 _ y)) -> y)
+    (\(BoxLike (V2 x y) (V2 x' y')) y'' -> BoxLike (V2 x (y + y'' - y')) (V2 x' y''))
 
 -- Move a box more efficiently.
-bXY, bXY' :: Num a => Simple Lens (Box a) (a, a)
-bXY f (Box (BoxLike x1 y1 x2 y2)) = let
-    f' (w, h) = Box $ BoxLike w h (w + x2 - x1) (h + y2 - y1)
-    in f' <$> f (x1, y1)
-bXY' f (Box (BoxLike x1 y1 x2 y2)) = let
-    f' (w, h) = Box $ BoxLike (w + x1 - x2) (h + y1 - y2) w h
-    in f' <$> f (x2, y2)
+bXY, bXY' :: Num a => Lens' (Box a) (V2 a)
+bXY f (Box (BoxLike x y)) = let
+    f' x' = Box $ BoxLike x' (y + x' - x)
+    in f' <$> f x
+bXY' f (Box (BoxLike x y)) = let
+    f' y' = Box $ BoxLike (x + y' - y) y'
+    in f' <$> f y
 
 -- The center of a box. Read-only.
-center :: Fractional a => Box a -> (a, a)
-center (Box (BoxLike x1 y1 x2 y2)) = ((x1 + x2) / 2, (y1 + y2) / 2)
+center :: Fractional a => Box a -> V2 a
+center (Box (BoxLike x y)) = (x + y) / 2
 
 -- Scale a box.
-scaleBox :: (Eq v, Num v) => v -> v -> Box v -> Box v
+scaleBox :: (Eq a, Num a) => a -> a -> Box a -> Box a
 scaleBox 0 _ _ = error "scaleBox: Zero width"
 scaleBox _ 0 _ = error "scaleBox: Zero height"
-scaleBox sx sy (Box (BoxLike x1 y1 x2 y2)) =
-    Box $ BoxLike (x1 * sx) (y1 * sy) (x2 * sx) (y2 * sy)
+scaleBox sx sy (Box (BoxLike x y)) =
+    Box $ BoxLike (x * v) (y * v)
+    where v = V2 sx sy

@@ -61,6 +61,8 @@ Library
   exposed-modules:   Gemstone.Animation
                    , Gemstone.Box
                    , Gemstone.Color
+                   , Gemstone.Drawable
+                   , Gemstone.Entity
                    , Gemstone.GL
                    , Gemstone.Loop
                    , Gemstone.Main
