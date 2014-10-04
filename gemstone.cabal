@@ -58,7 +58,8 @@ source-repository head
 
 
 Library
-  exposed-modules:   Gemstone.Animation
+  exposed-modules:   Gemstone.Amythest.Parser
+                   , Gemstone.Animation
                    , Gemstone.Box
                    , Gemstone.Color
                    , Gemstone.Drawable
@@ -85,9 +86,11 @@ Library
                    , containers
                    , lens == 4.4.*
                    , linear == 1.10.*
+                   , parsers
                    , random
                    , stb-image
                    , transformers
+                   , unordered-containers
 
   -- GHC compiler flags. -O2 is not in here at the moment...
   ghc-options:       -Wall -rtsopts
